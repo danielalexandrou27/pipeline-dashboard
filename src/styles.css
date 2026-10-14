@@ -1,0 +1,413 @@
+:root {
+  --paper: #F3F5F7;
+  --surface: #FFFFFF;
+  --ink: #18222E;
+  --ink-soft: #4F5B68;
+  --rule: #D5DCE3;
+  --rule-soft: #E6EBF0;
+  --failed: #B4322B;
+  --late: #A86200;
+  --running: #2265A8;
+  --succeeded: #2E7A4C;
+  --not-run: #7B8794;
+  --failed-wash: #FBEDEC;
+  --late-wash: #FBF2E4;
+  --focus: #2265A8;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #12191F;
+    --surface: #1A232B;
+    --ink: #E3E9EE;
+    --ink-soft: #9DA9B5;
+    --rule: #2E3A45;
+    --rule-soft: #24303A;
+    --failed: #E0665E;
+    --late: #D9973A;
+    --running: #5E9BDB;
+    --succeeded: #5BB07F;
+    --not-run: #8693A0;
+    --failed-wash: #34201F;
+    --late-wash: #33291A;
+    --focus: #5E9BDB;
+    color-scheme: dark;
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body { margin: 0; }
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'IBM Plex Sans', system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.45;
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--running); text-underline-offset: 2px; }
+a:hover { text-decoration-thickness: 2px; }
+
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 2px; }
+
+h1, h2, p { margin: 0; }
+
+button { font: inherit; color: inherit; cursor: pointer; }
+
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap;
+}
+
+.muted { color: var(--ink-soft); }
+
+/* ---------- Page frame ---------- */
+
+.page {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 28px 32px 64px;
+}
+
+.masthead {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 24px;
+  padding-bottom: 20px;
+}
+
+.masthead h1 {
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+}
+
+.masthead-day {
+  margin-top: 6px;
+  font-size: 17px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  align-items: baseline;
+}
+
+.masthead-note { font-size: 13px; color: var(--ink-soft); }
+
+.masthead-side { display: flex; align-items: center; gap: 18px; }
+
+.live { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; }
+.live-time { font-weight: 400; color: var(--ink-soft); }
+.live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--not-run); }
+.live-live .live-dot { background: var(--succeeded); }
+.live-reconnecting .live-dot { background: var(--late); }
+.live-reconnecting { color: var(--late); }
+
+.quiet-button {
+  background: none;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  padding: 5px 12px;
+  font-size: 14px;
+}
+.quiet-button:hover { border-color: var(--ink-soft); }
+
+.banner {
+  background: var(--failed-wash);
+  color: var(--failed);
+  border-left: 4px solid var(--failed);
+  padding: 10px 14px;
+  margin-bottom: 16px;
+}
+
+.loading, .empty { color: var(--ink-soft); padding: 40px 0; }
+
+/* ---------- Batch strip: the whole night in one line ---------- */
+
+.strip {
+  display: flex;
+  gap: 2px;
+  height: 34px;
+  margin-bottom: 18px;
+}
+
+.strip-seg {
+  flex: 1 1 0;
+  min-width: 2px;
+  background: var(--seg);
+  cursor: pointer;
+  transition: opacity 120ms;
+}
+.strip-seg:first-child { border-radius: 3px 0 0 3px; }
+.strip-seg:last-child { border-radius: 0 3px 3px 0; }
+.strip-seg.dim { opacity: 0.18; }
+.strip-seg.s-failed { --seg: var(--failed); }
+.strip-seg.s-late { --seg: var(--late); }
+.strip-seg.s-running { --seg: var(--running); animation: breathe 2.4s ease-in-out infinite; }
+.strip-seg.s-succeeded { --seg: var(--succeeded); }
+.strip-seg.s-notRun {
+  background: repeating-linear-gradient(135deg, var(--rule) 0 3px, transparent 3px 6px);
+  box-shadow: inset 0 0 0 1px var(--rule);
+}
+
+@keyframes breathe { 50% { opacity: 0.55; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .strip-seg.s-running { animation: none; }
+  .strip-seg { transition: none; }
+}
+
+/* ---------- Summary counts (also the status filter) ---------- */
+
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  margin-bottom: 18px;
+}
+
+.count {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 12px 22px 12px 14px;
+  background: none;
+  border: 0;
+  border-left: 1px solid var(--rule-soft);
+  text-align: left;
+  text-decoration: none;
+  color: var(--ink);
+  position: relative;
+}
+.count:first-child { border-left: 0; padding-left: 0; }
+.count:hover { background: var(--surface); }
+.count:first-child:hover { background: none; }
+.count:first-child:hover .count-label { color: var(--ink); }
+
+.count-n { font-size: 28px; font-weight: 600; line-height: 1; }
+.count-label { font-size: 13px; color: var(--ink-soft); }
+
+.count.c-failed .count-n { color: var(--failed); }
+.count.c-late .count-n { color: var(--late); }
+.count.c-running .count-n { color: var(--running); }
+.count.c-succeeded .count-n { color: var(--succeeded); }
+.count.c-notRun .count-n, .count.c-unregistered .count-n { color: var(--not-run); }
+.count.zero .count-n { color: var(--rule); }
+
+.count.on::after {
+  content: '';
+  position: absolute;
+  left: 14px; right: 22px; bottom: -1px;
+  height: 3px;
+  background: var(--ink);
+}
+.count.c-all.on::after { left: 0; }
+.count.on .count-label { color: var(--ink); font-weight: 500; }
+
+.c-unregistered { margin-left: auto; }
+
+/* ---------- Toolbar ---------- */
+
+.toolbar { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+
+.search input {
+  width: min(420px, 100%);
+  font: inherit;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  padding: 8px 12px;
+}
+.search { flex: 0 1 420px; }
+.search input { width: 100%; }
+
+/* ---------- The batch table ---------- */
+
+.batch {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+}
+
+.batch th {
+  text-align: left;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-soft);
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--rule);
+  background: var(--paper);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.batch td {
+  padding: 12px 14px;
+  vertical-align: top;
+  border-bottom: 1px solid var(--rule-soft);
+}
+
+.sf-group { border-top: 1px solid var(--rule); }
+.sf-group tr.more td { border-top: 0; }
+.sf-group tr:last-child td, .sf-group td[rowspan] { border-bottom: 1px solid var(--rule); }
+
+/* A step function's state runs down the left edge of its group. */
+.sf-group > tr.first > td:first-child { box-shadow: inset 4px 0 0 var(--edge, transparent); padding-left: 18px; }
+.g-failed { --edge: var(--failed); }
+.g-late { --edge: var(--late); }
+.g-running { --edge: var(--running); }
+.g-notRun { --edge: var(--rule); }
+.g-succeeded { --edge: var(--succeeded); }
+.g-failed > tr > td { background: color-mix(in srgb, var(--failed-wash) 55%, var(--surface)); }
+.g-late > tr > td { background: color-mix(in srgb, var(--late-wash) 55%, var(--surface)); }
+
+.col-pipeline { width: 13%; }
+.col-job { width: 25%; }
+.col-status { width: 10%; }
+.col-incident { width: 9%; }
+.no-wf .col-job { width: 60%; }
+
+.pipeline { font-weight: 500; overflow-wrap: anywhere; }
+
+.job-cell { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.job-name { font-weight: 500; overflow-wrap: anywhere; }
+.job-meta { display: flex; flex-wrap: wrap; gap: 2px 14px; font-size: 13px; color: var(--ink-soft); }
+.error-text { font-size: 13.5px; color: var(--failed); overflow-wrap: anywhere; max-width: 72ch; }
+.failed-step { font-weight: 500; }
+.wf.none { color: var(--ink-soft); }
+
+.console { display: inline-block; margin-top: 6px; font-size: 13px; }
+
+.status-cell { display: flex; flex-direction: column; gap: 2px; }
+.status-label { font-weight: 500; white-space: nowrap; }
+.due { font-size: 13px; color: var(--ink-soft); white-space: nowrap; }
+.s-failed .status-label { color: var(--failed); }
+.s-late .status-label, .s-late .due { color: var(--late); }
+.s-running .status-label { color: var(--running); }
+.s-succeeded .status-label { color: var(--succeeded); }
+.s-notRun .status-label { color: var(--not-run); }
+
+.runs {
+  margin-top: 6px;
+  background: none;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  padding: 1px 10px;
+  font-size: 12.5px;
+  white-space: nowrap;
+}
+.runs:hover { border-color: var(--ink-soft); }
+.runs[aria-expanded="true"] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+
+.incident a { font-weight: 500; }
+.incident .muted { font-size: 13px; }
+
+.attempts-row td { background: var(--paper) !important; padding: 10px 18px 14px; }
+.attempts { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.attempts li {
+  display: grid;
+  grid-template-columns: 100px 240px 1fr auto;
+  gap: 4px 16px;
+  align-items: baseline;
+  padding-left: 12px;
+  border-left: 3px solid var(--edge, var(--rule));
+  font-size: 14px;
+}
+.attempts li.s-failed { --edge: var(--failed); }
+.attempts li.s-running { --edge: var(--running); }
+.attempts li.s-succeeded { --edge: var(--succeeded); }
+.attempt-time { color: var(--ink-soft); }
+.attempt-links { display: flex; gap: 14px; font-size: 13px; grid-column: 4; }
+
+/* ---------- Not in the registry ---------- */
+
+.unregistered { margin-top: 44px; }
+.unregistered h2 { font-size: 19px; font-weight: 600; }
+.section-note { color: var(--ink-soft); margin: 4px 0 14px; max-width: 72ch; }
+
+/* ---------- Sign in ---------- */
+
+.login { min-height: 100vh; display: grid; place-items: center; padding: 16px; }
+.login-form {
+  width: min(360px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.login-form h1 { font-size: 30px; font-weight: 600; }
+.login-lede { color: var(--ink-soft); margin-top: -10px; }
+.login-form label { display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 500; }
+.login-form input {
+  font: inherit;
+  font-weight: 400;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  padding: 9px 12px;
+}
+.login-form button {
+  background: var(--ink);
+  color: var(--paper);
+  border: 0;
+  border-radius: 4px;
+  padding: 10px 14px;
+  font-weight: 500;
+}
+.login-form button:disabled { opacity: 0.6; cursor: default; }
+.login-error { color: var(--failed); font-size: 14px; }
+
+/* ---------- Narrow screens: each step function becomes a stacked block ---------- */
+
+@media (max-width: 860px) {
+  .page { padding: 18px 16px 48px; }
+  .masthead { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .masthead h1 { font-size: 24px; }
+  .masthead-side { width: 100%; justify-content: space-between; }
+  .count { padding: 10px 14px 10px 10px; }
+  .count-n { font-size: 22px; }
+  .c-unregistered { margin-left: 0; }
+
+  .batch, .batch tbody, .batch tr, .batch td { display: block; width: 100%; }
+  .batch { border: 0; background: none; }
+  .batch thead { display: none; }
+  .sf-group {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-left: 4px solid var(--edge, var(--rule));
+    margin-bottom: 12px;
+    display: flex !important;
+    flex-direction: column;
+  }
+  .sf-group > tr.first > td:first-child { box-shadow: none; padding-left: 14px; }
+  .batch td { border: 0 !important; padding: 6px 14px; }
+  .batch td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-bottom: 2px;
+  }
+  /* Put the step function first on a phone; workflows follow. */
+  .sf-group tr.first { display: flex; flex-direction: column; }
+  .sf-group td.pipeline { order: -3; padding-top: 12px; }
+  .sf-group td.sf { order: -2; }
+  .sf-group td.status[rowspan] { order: -1; }
+  .sf-group td.incident { order: -1; }
+  .sf-group tr.first td.wf { border-top: 1px solid var(--rule-soft) !important; margin-top: 4px; padding-top: 10px; }
+  .sf-group tr.more td.wf { border-top: 1px solid var(--rule-soft) !important; padding-top: 10px; }
+  .sf-group tr:last-child { padding-bottom: 8px; }
+  .attempts li { grid-template-columns: 1fr; }
+  .attempt-links { grid-column: auto; }
+}
