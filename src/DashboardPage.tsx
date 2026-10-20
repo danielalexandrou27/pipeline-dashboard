@@ -83,7 +83,7 @@ export function DashboardPage({ onSignedOut, onSignOut }: Props) {
             <section className="unregistered" aria-labelledby="unregistered-heading">
               <h2 id="unregistered-heading">Not in the registry</h2>
               <p className="section-note">
-                These step functions ran today but aren't listed in pipelines.yml, so they have no workflow linked
+                These step functions ran today but aren't listed in pipelines.yml, so they have no upstream linked
                 and no due time. Add them to the registry to track them above.
               </p>
               <BatchTable groups={visibleUnregistered} data={data} withWorkflow={false} />

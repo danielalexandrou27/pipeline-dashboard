@@ -286,6 +286,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .error-text { font-size: 13.5px; color: var(--failed); overflow-wrap: anywhere; max-width: 72ch; }
 .failed-step { font-weight: 500; }
 .wf.none { color: var(--ink-soft); }
+.kind { font-weight: 500; color: var(--ink); }
 
 .console { display: inline-block; margin-top: 6px; font-size: 13px; }
 

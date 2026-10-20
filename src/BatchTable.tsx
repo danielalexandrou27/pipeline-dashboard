@@ -21,8 +21,8 @@ export function BatchTable({ groups, data, withWorkflow }: Props) {
       <thead>
         <tr>
           {withWorkflow && <th scope="col" className="col-pipeline">Pipeline</th>}
-          {withWorkflow && <th scope="col" className="col-job">Informatica workflow</th>}
-          {withWorkflow && <th scope="col" className="col-status">Workflow status</th>}
+          {withWorkflow && <th scope="col" className="col-job">Upstream (workflow or step function)</th>}
+          {withWorkflow && <th scope="col" className="col-status">Upstream status</th>}
           <th scope="col" className="col-job">Step function</th>
           <th scope="col" className="col-status">Step function status</th>
           <th scope="col" className="col-incident">Incident</th>
@@ -61,12 +61,12 @@ function Group({ group, data, withWorkflow }: { group: SfGroup; data: Dashboard;
           {withWorkflow && (
             r.upstream ? (
               <>
-                <td className="job wf" data-label="Informatica workflow"><JobCell job={r.upstream} tz={tz} /></td>
-                <td className="status" data-label="Workflow status"><StatusCell job={r.upstream} /></td>
+                <td className="job wf" data-label={upstreamLabel(r.upstream)}><JobCell job={r.upstream} tz={tz} showKind /></td>
+                <td className="status" data-label="Upstream status"><StatusCell job={r.upstream} /></td>
               </>
             ) : (
-              <td colSpan={2} className="job wf none" data-label="Informatica workflow">
-                <span className="muted">No upstream workflow</span>
+              <td colSpan={2} className="job wf none" data-label="Upstream">
+                <span className="muted">No upstream dependency</span>
               </td>
             )
           )}
@@ -106,12 +106,18 @@ function Group({ group, data, withWorkflow }: { group: SfGroup; data: Dashboard;
   );
 }
 
-function JobCell({ job, tz }: { job: Job; tz: string }) {
+function upstreamLabel(job: Job): string {
+  return job.type === 'STEP_FUNCTIONS' ? 'Upstream step function' : 'Upstream Informatica workflow';
+}
+
+function JobCell({ job, tz, showKind = false }: { job: Job; tz: string; showKind?: boolean }) {
+  const isSfn = job.type === 'STEP_FUNCTIONS';
   return (
     <div className="job-cell">
       <p className="job-name">{job.name}</p>
-      {(job.folder || job.startedAt) && (
+      {(showKind || job.folder || job.startedAt) && (
         <p className="job-meta">
+          {showKind && <span className="kind">{isSfn ? 'Step function' : 'Informatica workflow'}</span>}
           {job.folder && <span>Folder {job.folder}</span>}
           {job.startedAt && <span>{times(job, tz)}</span>}
         </p>
@@ -121,6 +127,9 @@ function JobCell({ job, tz }: { job: Job; tz: string }) {
           {job.failedStep && <span className="failed-step">At step {job.failedStep}: </span>}
           {job.error}
         </p>
+      )}
+      {showKind && isSfn && job.consoleUrl && (
+        <a className="console" href={job.consoleUrl} target="_blank" rel="noreferrer">Open in AWS console</a>
       )}
     </div>
   );
